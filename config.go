@@ -137,6 +137,7 @@ func parseConfig(data []byte) (*pusherConfig, error) {
 		if resName == "config" || resName == "default_env_labels" || resName == "service_env_labels" {
 			continue
 		}
+                fmt.Println(p.routeMap)
 
 		res := &resourceConfig{
 			pushGatewayURL: p.pushGatewayURL,
@@ -178,8 +179,9 @@ func parseConfig(data []byte) (*pusherConfig, error) {
 		}
 
 		if t.Has(resName + ".route_map") {
-			res.routeMap = t.Get(resName + ".path").(string)
+			res.routeMap = t.Get(resName + ".route_map").(string)
 		}
+                fmt.Println(res.routeMap)
 		var scheme string
 		if res.ssl {
 			scheme = "https"

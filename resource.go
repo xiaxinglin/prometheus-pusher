@@ -83,6 +83,8 @@ func newResource(name string, cfg *pusherConfig, grm *routeMap) *resource {
 	}
 
 	var rm *routeMap
+	fmt.Println(cfg.resources["resource1"])
+        fmt.Println(cfg.resources["resource2"])
 	if cfg.resources[name].routeMap != "" {
 		rm = newRouteMap(cfg.resources[name].routeMap, defaultRoute)
 	} else {
@@ -144,10 +146,11 @@ func (r *resource) getMetrics() []byte {
 
 // push metrics into given destination
 //
-func (r *resource) pushMetrics(metrics []byte, dst string, wg *sync.WaitGroup) {
+func (r *resource) pushMetrics(metrics []byte, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	postURL := fmt.Sprintf(r.pushGatewayURL, dst) + fmt.Sprintf("/job/%s/instance/%s", r.name, hostname)
+	postURL := r.pushGatewayURL  + fmt.Sprintf("metrics/job/%s/instance/%s", r.name, hostname)
+        fmt.Println(postURL)
 	if dummy {
 		printMutex.Lock()
 		defer printMutex.Unlock()
@@ -161,6 +164,7 @@ func (r *resource) pushMetrics(metrics []byte, dst string, wg *sync.WaitGroup) {
 	}).Debug("Pushing metrics.")
 
 	data := bytes.NewReader(metrics)
+	fmt.Println(string(metrics))
 	resp, err := r.httpClient.Post(postURL, "text/plain", data)
 	if err != nil {
 		logger.WithFields(logrus.Fields{
@@ -198,10 +202,12 @@ func (r *resource) getAndPush(wgImux *sync.WaitGroup, cfg *pusherConfig) {
 	defer wgImux.Done()
 	wgPush := &sync.WaitGroup{}
 	if metricsBytes := r.getMetrics(); metricsBytes != nil {
-		m := newMetrics(metricsBytes, cfg)
-		for dst, body := range m.imux(r.routes, cfg) {
+		//m := newMetrics(metricsBytes, cfg)
+		/*for dst, body := range m.imux(r.routes, cfg) {
 			wgPush.Add(1)
 			go r.pushMetrics(body, dst, wgPush)
-		}
+		}*/
+                wgPush.Add(1)
+                go r.pushMetrics(metricsBytes, wgPush)
 	}
 }

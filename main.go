@@ -88,6 +88,7 @@ func main() {
 	// prepare global route map if there is any
 	var globalRouteMap *routeMap
 	if pusherCfg.defaultRoute != "" && pusherCfg.routeMap != "" {
+                fmt.Println("is null ?")
 		globalRouteMap = newRouteMap(pusherCfg.routeMap, pusherCfg.defaultRoute)
 	}
 
